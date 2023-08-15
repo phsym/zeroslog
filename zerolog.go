@@ -52,6 +52,8 @@ var _ zerologHandler = (*Handler)(nil)
 // opts.Level is used.
 //
 // The provided logger instance must be configured to not send timestamps or caller information.
+//
+// If opts is nil, it assumes default options values.
 func NewHandler(logger zerolog.Logger, opts *HandlerOptions) *Handler {
 	if opts == nil {
 		opts = new(HandlerOptions)
