@@ -37,48 +37,48 @@ type zerologHandler interface {
 	handleGroup(group string, rec *slog.Record, e *zerolog.Event)
 }
 
-// ZerologHandler is an slog.Handler implementation that uses zerolog to process slog.Record.
-type ZerologHandler struct {
+// Handler is an slog.Handler implementation that uses zerolog to process slog.Record.
+type Handler struct {
 	opts   *HandlerOptions
 	logger zerolog.Logger
 }
 
-var _ zerologHandler = (*ZerologHandler)(nil)
+var _ zerologHandler = (*Handler)(nil)
 
-// NewZerologHandler creates a *ZerologHandler implementing slog.Handler.
+// NewHandler creates a *ZerologHandler implementing slog.Handler.
 // It wraps a zerolog.Logger to which log records will be sent.
 //
 // Unlesse opts.Level is not nil, the logger level is used to filter out records, otherwise
 // opts.Level is used.
 //
 // The provided logger instance must be configured to not send timestamps or caller information.
-func NewZerologHandler(logger zerolog.Logger, opts *HandlerOptions) *ZerologHandler {
+func NewHandler(logger zerolog.Logger, opts *HandlerOptions) *Handler {
 	if opts == nil {
 		opts = new(HandlerOptions)
 	}
-	return &ZerologHandler{
+	return &Handler{
 		opts:   opts,
 		logger: logger,
 	}
 }
 
-// NewZerologJsonHandler is a shortcut to calling
+// NewJsonHandler is a shortcut to calling
 //
-//	NewZerologHandler(zerolog.New(out).Level(zerolog.InfoLevel), opts)
-func NewZerologJsonHandler(out io.Writer, opts *HandlerOptions) *ZerologHandler {
-	return NewZerologHandler(zerolog.New(out).Level(zerolog.InfoLevel), opts)
+//	NewHandler(zerolog.New(out).Level(zerolog.InfoLevel), opts)
+func NewJsonHandler(out io.Writer, opts *HandlerOptions) *Handler {
+	return NewHandler(zerolog.New(out).Level(zerolog.InfoLevel), opts)
 }
 
-// NewZerologConsoleHandler creates a new zerolog handler, wrapping out into a zerolog.ConsoleWriter.
+// NewConsoleHandler creates a new zerolog handler, wrapping out into a zerolog.ConsoleWriter.
 // It's a shortcut to calling
 //
-//	NewZerologHandler(zerolog.New(&zerolog.ConsoleWriter{Out: out, TimeFormat: time.DateTime}).Level(zerolog.InfoLevel), opts)
-func NewZerologConsoleHandler(out io.Writer, opts *HandlerOptions) *ZerologHandler {
-	return NewZerologJsonHandler(&zerolog.ConsoleWriter{Out: out, TimeFormat: time.DateTime}, opts)
+//	NewHandler(zerolog.New(&zerolog.ConsoleWriter{Out: out, TimeFormat: time.DateTime}).Level(zerolog.InfoLevel), opts)
+func NewConsoleHandler(out io.Writer, opts *HandlerOptions) *Handler {
+	return NewJsonHandler(&zerolog.ConsoleWriter{Out: out, TimeFormat: time.DateTime}, opts)
 }
 
 // Enabled implements slog.Handler.
-func (h *ZerologHandler) Enabled(_ context.Context, lvl slog.Level) bool {
+func (h *Handler) Enabled(_ context.Context, lvl slog.Level) bool {
 	if h.opts.Level != nil {
 		return lvl >= h.opts.Level.Level()
 	}
@@ -86,7 +86,7 @@ func (h *ZerologHandler) Enabled(_ context.Context, lvl slog.Level) bool {
 }
 
 // startLog creates a new logging event at the given level.
-func (h *ZerologHandler) startLog(lvl slog.Level) *zerolog.Event {
+func (h *Handler) startLog(lvl slog.Level) *zerolog.Event {
 	logger := h.logger
 	if h.opts.Level != nil {
 		logger = h.logger.Level(zerologLevel(h.opts.Level.Level()))
@@ -95,7 +95,7 @@ func (h *ZerologHandler) startLog(lvl slog.Level) *zerolog.Event {
 }
 
 // endLog finalize the log event by appending record source, timestamp and message before sending it.
-func (h *ZerologHandler) endLog(rec *slog.Record, evt *zerolog.Event) {
+func (h *Handler) endLog(rec *slog.Record, evt *zerolog.Event) {
 	if h.opts.AddSource && rec.PC > 0 {
 		frame, _ := runtime.CallersFrames([]uintptr{rec.PC}).Next()
 		evt.Str(zerolog.CallerFieldName, fmt.Sprintf("%s:%d", frame.File, frame.Line))
@@ -106,14 +106,14 @@ func (h *ZerologHandler) endLog(rec *slog.Record, evt *zerolog.Event) {
 }
 
 // handleGroup handles records comming from a child group.
-func (h *ZerologHandler) handleGroup(group string, rec *slog.Record, dict *zerolog.Event) {
+func (h *Handler) handleGroup(group string, rec *slog.Record, dict *zerolog.Event) {
 	evt := h.startLog(rec.Level)
 	evt.Dict(group, dict)
 	h.endLog(rec, evt)
 }
 
 // Handle implements slog.Handler.
-func (h *ZerologHandler) Handle(_ context.Context, rec slog.Record) error {
+func (h *Handler) Handle(_ context.Context, rec slog.Record) error {
 	evt := h.startLog(rec.Level)
 	rec.Attrs(func(a slog.Attr) bool {
 		mapAttr(evt, a)
@@ -124,15 +124,15 @@ func (h *ZerologHandler) Handle(_ context.Context, rec slog.Record) error {
 }
 
 // WithAttrs implements slog.Handler.
-func (h *ZerologHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	return &ZerologHandler{
+func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return &Handler{
 		opts:   h.opts,
 		logger: mapAttrs(h.logger.With(), attrs...).Logger(),
 	}
 }
 
 // WithGroup implements slog.Handler.
-func (h *ZerologHandler) WithGroup(name string) slog.Handler {
+func (h *Handler) WithGroup(name string) slog.Handler {
 	return &groupHandler{
 		parent: h,
 		ctx:    zerolog.Context{},

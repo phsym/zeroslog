@@ -112,7 +112,7 @@ func TestZerolog_Levels(t *testing.T) {
 	out := bytes.Buffer{}
 	for _, lvl := range levels {
 		t.Run(lvl.slvl.String(), func(t *testing.T) {
-			hdl := NewZerologJsonHandler(&out, &HandlerOptions{Level: lvl.slvl})
+			hdl := NewJsonHandler(&out, &HandlerOptions{Level: lvl.slvl})
 			for _, l := range levels {
 				enabled := l.slvl >= lvl.slvl
 				if hdl.Enabled(nil, l.slvl) != enabled {
@@ -138,7 +138,7 @@ func TestZerolog_Levels_NoOption(t *testing.T) {
 	out := bytes.Buffer{}
 	for _, lvl := range levels {
 		t.Run(lvl.slvl.String(), func(t *testing.T) {
-			hdl := NewZerologHandler(zerolog.New(&out).Level(lvl.zlvl), nil)
+			hdl := NewHandler(zerolog.New(&out).Level(lvl.zlvl), nil)
 			for _, l := range levels {
 				enabled := l.zlvl >= lvl.zlvl
 				if hdl.Enabled(nil, l.slvl) != enabled {
@@ -167,7 +167,7 @@ func TestZerolog_Levels_NoOption(t *testing.T) {
 
 func TestZerolog_NoGroup(t *testing.T) {
 	out := bytes.Buffer{}
-	hdl := NewZerologJsonHandler(&out, nil).
+	hdl := NewJsonHandler(&out, nil).
 		WithAttrs([]slog.Attr{slog.String("attr", "the attr")})
 
 	if !hdl.Enabled(nil, slog.LevelError) {
@@ -198,7 +198,7 @@ func TestZerolog_NoGroup(t *testing.T) {
 
 func TestZerolog_Group(t *testing.T) {
 	out := bytes.Buffer{}
-	hdl := NewZerologJsonHandler(&out, nil).
+	hdl := NewJsonHandler(&out, nil).
 		WithAttrs([]slog.Attr{slog.String("attr", "the attr")}).
 		WithGroup("testgroup").
 		WithAttrs([]slog.Attr{slog.String("attr", "the attr")}).
@@ -237,7 +237,7 @@ func TestZerolog_Group(t *testing.T) {
 
 func TestZerolog_AddSource(t *testing.T) {
 	out := bytes.Buffer{}
-	hdl := NewZerologJsonHandler(&out, &HandlerOptions{AddSource: true})
+	hdl := NewJsonHandler(&out, &HandlerOptions{AddSource: true})
 	pc, file, line, _ := runtime.Caller(0)
 	hdl.Handle(context.Background(), slog.NewRecord(time.Now(), slog.LevelInfo, "foobar", pc))
 	m := map[string]any{}
@@ -251,7 +251,7 @@ func TestZerolog_AddSource(t *testing.T) {
 
 func TestZerolog_ConsoleHandler(t *testing.T) {
 	out := bytes.Buffer{}
-	hdl := NewZerologConsoleHandler(&out, nil)
+	hdl := NewConsoleHandler(&out, nil)
 	hdl.Handle(context.Background(), slog.NewRecord(time.Now(), slog.LevelInfo, "foobar", 0))
 	txt := out.String()
 	if !strings.Contains(txt, "foobar") || !strings.Contains(txt, "INF") {
@@ -264,7 +264,7 @@ func TestZerolog_ConsoleHandler(t *testing.T) {
 func TestHandler(t *testing.T) {
 	out := bytes.Buffer{}
 	dec := json.NewDecoder(&out)
-	hdl := NewZerologJsonHandler(&out, &HandlerOptions{Level: slog.LevelDebug})
+	hdl := NewJsonHandler(&out, &HandlerOptions{Level: slog.LevelDebug})
 	err := slogtest.TestHandler(hdl, func() []map[string]any {
 		results := []map[string]any{}
 		m := map[string]any{}

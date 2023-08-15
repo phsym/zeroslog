@@ -21,7 +21,7 @@ var (
 	handlers = map[string]slog.Handler{
 		"std-text": slog.NewTextHandler(io.Discard, &slog.HandlerOptions{Level: slog.LevelDebug}),
 		"std-json": slog.NewJSONHandler(io.Discard, &slog.HandlerOptions{Level: slog.LevelDebug}),
-		"zerolog":  NewZerologJsonHandler(io.Discard, &HandlerOptions{Level: slog.LevelDebug}),
+		"zerolog":  NewJsonHandler(io.Discard, &HandlerOptions{Level: slog.LevelDebug}),
 		"dummy":    &DummyHandler{},
 	}
 

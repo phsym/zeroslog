@@ -38,7 +38,7 @@ func BenchmarkDummy(b *testing.B) {
 
 func BenchmarkSlogZerolog(b *testing.B) {
 	ctx := context.Background()
-	l := slog.New(NewZerologJsonHandler(io.Discard, &HandlerOptions{Level: slog.LevelDebug}))
+	l := slog.New(NewJsonHandler(io.Discard, &HandlerOptions{Level: slog.LevelDebug}))
 	l = l.With("foo", "bar")
 	b.ResetTimer()
 	f := func(b *testing.B) {
@@ -59,7 +59,7 @@ func BenchmarkSlogZerolog(b *testing.B) {
 
 func BenchmarkSlogZerolog_HandlerWithRec(b *testing.B) {
 	ctx := context.Background()
-	h := slog.Handler(NewZerologJsonHandler(io.Discard, &HandlerOptions{Level: slog.LevelDebug}))
+	h := slog.Handler(NewJsonHandler(io.Discard, &HandlerOptions{Level: slog.LevelDebug}))
 	h = h.WithAttrs([]slog.Attr{slog.String("foo", "bar")})
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71,7 +71,7 @@ func BenchmarkSlogZerolog_HandlerWithRec(b *testing.B) {
 
 func BenchmarkSlogZerolog_HandlerWithRecAndCaller(b *testing.B) {
 	ctx := context.Background()
-	h := slog.Handler(NewZerologJsonHandler(io.Discard, &HandlerOptions{Level: slog.LevelDebug}))
+	h := slog.Handler(NewJsonHandler(io.Discard, &HandlerOptions{Level: slog.LevelDebug}))
 	h = h.WithAttrs([]slog.Attr{slog.String("foo", "bar")})
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
