@@ -1,4 +1,4 @@
-module zeroslog
+module github.com/phsym/zeroslog
 
 go 1.21
 
