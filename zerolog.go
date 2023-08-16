@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"net"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -58,8 +59,9 @@ func NewHandler(logger zerolog.Logger, opts *HandlerOptions) *Handler {
 	if opts == nil {
 		opts = new(HandlerOptions)
 	}
+	opt := *opts // Copy
 	return &Handler{
-		opts:   opts,
+		opts:   &opt,
 		logger: logger,
 	}
 }
@@ -138,7 +140,7 @@ func (h *Handler) WithGroup(name string) slog.Handler {
 	return &groupHandler{
 		parent: h,
 		ctx:    zerolog.Context{},
-		name:   name,
+		name:   strings.TrimSpace(name),
 	}
 }
 
