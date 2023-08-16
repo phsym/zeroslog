@@ -125,7 +125,7 @@ func TestZerolog_Levels(t *testing.T) {
 						t.Fatalf("Failed to json decode log output: %s", err.Error())
 					}
 					if m[zerolog.LevelFieldName] != l.zlvl.String() {
-						t.Fatalf("Unexpectd value for field %s. Got %s but expectd %s", zerolog.LevelFieldName, m[zerolog.LevelFieldName], l.zlvl.String())
+						t.Fatalf("Unexpected value for field %s. Got %s but expected %s", zerolog.LevelFieldName, m[zerolog.LevelFieldName], l.zlvl.String())
 					}
 				}
 			}
@@ -152,7 +152,7 @@ func TestZerolog_Levels_NoOption(t *testing.T) {
 						t.Fatalf("Failed to json decode log output: %s", err.Error())
 					}
 					if m[zerolog.LevelFieldName] != l.zlvl.String() {
-						t.Fatalf("Unexpectd value for field %s. Got %s but expectd %s", zerolog.LevelFieldName, m[zerolog.LevelFieldName], l.zlvl.String())
+						t.Fatalf("Unexpected value for field %s. Got %s but expected %s", zerolog.LevelFieldName, m[zerolog.LevelFieldName], l.zlvl.String())
 					}
 				} else {
 					if !errors.Is(err, io.EOF) {
