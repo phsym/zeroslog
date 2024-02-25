@@ -42,6 +42,22 @@ type zerologHandler interface {
 type Handler struct {
 	opts   *HandlerOptions
 	logger zerolog.Logger
+
+	// root logger for use in creating zerolog.Context objects via root.With().
+	root *zerolog.Logger
+
+	// The root field is used to capture the original (top-level) logger object.
+	// The root value is used to create new zerolog.Context objects where required.
+	// The zerolog.Context object has an logger field that is private and can't be set.
+	// In addition, the zerolog.Logger object has a private context field which is []byte
+	// (unrelated to either zerolog.Context or context.Context so not confusing at all).
+	// This field is used to collect pre-formatted attributes so that they don't have to
+	// be re-generated with each log message, so it needs to be cleared for each new zerolog.Context.
+	// The work-around is to use root.With() to generate a new zerolog.Context with
+	// a blank context field using the root logger stored in this struct.
+	// Using a subsequent logger that has been created by WithAttrs() or WithGroup()
+	// will carry any current context []byte down into the new logger,
+	// resulting in data being duplicated within more embedded groups.
 }
 
 var _ zerologHandler = (*Handler)(nil)
@@ -63,6 +79,7 @@ func NewHandler(logger zerolog.Logger, opts *HandlerOptions) *Handler {
 	return &Handler{
 		opts:   &opt,
 		logger: logger,
+		root:   &logger,
 	}
 }
 
@@ -131,7 +148,8 @@ func (h *Handler) Handle(_ context.Context, rec slog.Record) error {
 func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &Handler{
 		opts:   h.opts,
-		logger: mapAttrs(h.logger.With(), attrs...).Logger(),
+		logger: mapAttrs(h.root.With(), attrs...).Logger(),
+		root:   h.root,
 	}
 }
 
@@ -139,8 +157,11 @@ func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 func (h *Handler) WithGroup(name string) slog.Handler {
 	return &groupHandler{
 		parent: h,
-		ctx:    zerolog.Context{},
-		name:   strings.TrimSpace(name),
+		root:   h.root,
+		// Use h.root.With() to create new zerolog.Context object.
+		// Creating via h.parent inherits changes made to that object.
+		ctx:  h.root.With(),
+		name: strings.TrimSpace(name),
 	}
 }
 
@@ -149,6 +170,10 @@ type groupHandler struct {
 	parent zerologHandler
 	ctx    zerolog.Context
 	name   string
+
+	// root logger for use in creating zerolog.Context objects via root.With().
+	// See source comment in Handler class above.
+	root *zerolog.Logger
 }
 
 var _ zerologHandler = (*groupHandler)(nil)
@@ -182,8 +207,11 @@ func (h *groupHandler) Handle(ctx context.Context, rec slog.Record) error {
 func (h *groupHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &groupHandler{
 		parent: h.parent,
-		ctx:    mapAttrs(h.ctx.Logger().With(), attrs...),
-		name:   h.name,
+		root:   h.root,
+		// Use h.root.With() to create new zerolog.Context object.
+		// Creating via h.parent inherits changes made to that object.
+		ctx:  mapAttrs(h.root.With(), attrs...),
+		name: h.name,
 	}
 }
 
@@ -191,8 +219,11 @@ func (h *groupHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 func (h *groupHandler) WithGroup(name string) slog.Handler {
 	return &groupHandler{
 		parent: h,
-		ctx:    zerolog.Context{},
-		name:   name,
+		root:   h.root,
+		// Use h.root.With() to create new zerolog.Context object.
+		// Creating via h.parent inherits changes made to that object.
+		ctx:  h.root.With(),
+		name: name,
 	}
 }
 
