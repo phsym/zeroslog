@@ -49,13 +49,14 @@ var _ zerologHandler = (*Handler)(nil)
 // NewHandler creates a *ZerologHandler implementing slog.Handler.
 // It wraps a zerolog.Logger to which log records will be sent.
 //
-// Unlesse opts.Level is not nil, the logger level is used to filter out records, otherwise
+// Unless opts.Level is not nil, the logger level is used to filter out records, otherwise
 // opts.Level is used.
 //
 // The provided logger instance must be configured to not send timestamps or caller information.
 //
 // If opts is nil, it assumes default options values.
 func NewHandler(logger zerolog.Logger, opts *HandlerOptions) *Handler {
+	zerolog.MessageFieldName = slog.MessageKey
 	if opts == nil {
 		opts = new(HandlerOptions)
 	}
