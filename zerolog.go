@@ -131,7 +131,7 @@ func (h *Handler) Handle(_ context.Context, rec slog.Record) error {
 func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &Handler{
 		opts:   h.opts,
-		logger: mapAttrs(zerolog.NewContextWithResetLogger(h.logger), attrs...).Logger(),
+		logger: mapAttrs(h.logger.With().Reset(), attrs...).Logger(),
 	}
 }
 
@@ -139,7 +139,7 @@ func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 func (h *Handler) WithGroup(name string) slog.Handler {
 	return &groupHandler{
 		parent: h,
-		ctx:    zerolog.NewContextWithResetLogger(h.logger),
+		ctx:    h.logger.With().Reset(),
 		name:   strings.TrimSpace(name),
 	}
 }
@@ -182,7 +182,7 @@ func (h *groupHandler) Handle(ctx context.Context, rec slog.Record) error {
 func (h *groupHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &groupHandler{
 		parent: h.parent,
-		ctx:    mapAttrs(zerolog.NewContextWithResetLogger(h.ctx.Logger()), attrs...),
+		ctx:    mapAttrs(h.ctx.Logger().With().Reset(), attrs...),
 		name:   h.name,
 	}
 }
@@ -191,7 +191,7 @@ func (h *groupHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 func (h *groupHandler) WithGroup(name string) slog.Handler {
 	return &groupHandler{
 		parent: h,
-		ctx:    zerolog.NewContextWithResetLogger(h.ctx.Logger()),
+		ctx:    h.ctx.Logger().With().Reset(),
 		name:   name,
 	}
 }
