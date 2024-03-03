@@ -131,7 +131,7 @@ func (h *Handler) Handle(_ context.Context, rec slog.Record) error {
 func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &Handler{
 		opts:   h.opts,
-		logger: mapAttrs(h.logger.With().Reset(), attrs...).Logger(),
+		logger: mapAttrs(h.logger.With(), attrs...).Logger(),
 	}
 }
 
