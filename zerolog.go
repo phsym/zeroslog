@@ -105,7 +105,9 @@ func (h *Handler) endLog(rec *slog.Record, evt *zerolog.Event) {
 		evt.Str(zerolog.CallerFieldName, fmt.Sprintf("%s:%d", frame.File, frame.Line))
 	}
 
-	evt.Time(zerolog.TimestampFieldName, rec.Time)
+	if !rec.Time.IsZero() {
+		evt.Time(zerolog.TimestampFieldName, rec.Time)
+	}
 	evt.Msg(rec.Message)
 }
 

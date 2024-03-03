@@ -235,6 +235,38 @@ func TestZerolog_Group(t *testing.T) {
 	}
 }
 
+// TestZerolog_ZeroTime verifies that a zero timestamp will not be logged.
+//   - "- If r.Time is the zero time, ignore the time."
+//   - https://pkg.go.dev/log/slog@master#Handler
+func TestZerolog_ZeroTime(t *testing.T) {
+	out := bytes.Buffer{}
+	hdl := NewJsonHandler(&out, &HandlerOptions{AddSource: true})
+	_ = hdl.Handle(context.Background(),
+		slog.NewRecord(time.Time{}, slog.LevelInfo, "foobar", 0))
+	m := map[string]any{}
+	if err := json.NewDecoder(&out).Decode(&m); err != nil {
+		t.Fatalf("Failed to json decode log output: %s", err.Error())
+	}
+	if _, found := m[slog.TimeKey]; found {
+		t.Fatalf("Empty '%s' key %v", slog.TimeKey, m[slog.TimeKey])
+	}
+}
+
+// TestZerolog_NonZeroTime verifies that a non-zero timestamp will be logged.
+func TestZerolog_NonZeroTime(t *testing.T) {
+	out := bytes.Buffer{}
+	hdl := NewJsonHandler(&out, &HandlerOptions{AddSource: true})
+	_ = hdl.Handle(context.Background(),
+		slog.NewRecord(time.Now(), slog.LevelInfo, "foobar", 0))
+	m := map[string]any{}
+	if err := json.NewDecoder(&out).Decode(&m); err != nil {
+		t.Fatalf("Failed to json decode log output: %s", err.Error())
+	}
+	if now, found := m[slog.TimeKey]; !found && now != nil {
+		t.Fatalf("No '%s' key %v", slog.TimeKey, m[slog.TimeKey])
+	}
+}
+
 func TestZerolog_AddSource(t *testing.T) {
 	out := bytes.Buffer{}
 	hdl := NewJsonHandler(&out, &HandlerOptions{AddSource: true})
