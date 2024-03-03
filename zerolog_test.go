@@ -235,6 +235,10 @@ func TestZerolog_Group(t *testing.T) {
 	}
 }
 
+// TestZerolog_MessageKey checks to see if the logged message key is slog.MessageKey.
+// The field name of the message key should be the value of slog.MessageKey = "msg".
+//   - Constant values are defined for slog/log
+//   - Field values are defined for the JSONHandler.Handle() implementation
 func TestZerolog_MessageKey(t *testing.T) {
 	out := bytes.Buffer{}
 	hdl := NewJsonHandler(&out, nil)
