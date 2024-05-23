@@ -2,7 +2,7 @@ module github.com/phsym/zeroslog
 
 go 1.21
 
-require github.com/rs/zerolog v1.32.1-0.20240306065720-74cf37a3965b
+require github.com/rs/zerolog v1.33.0
 
 require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
