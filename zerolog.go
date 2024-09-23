@@ -139,7 +139,7 @@ func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 func (h *Handler) WithGroup(name string) slog.Handler {
 	return &groupHandler{
 		parent: h,
-		ctx:    zerolog.Context{},
+		ctx:    h.logger.With().Reset(),
 		name:   strings.TrimSpace(name),
 	}
 }
@@ -182,7 +182,7 @@ func (h *groupHandler) Handle(ctx context.Context, rec slog.Record) error {
 func (h *groupHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &groupHandler{
 		parent: h.parent,
-		ctx:    mapAttrs(h.ctx.Logger().With(), attrs...),
+		ctx:    mapAttrs(h.ctx.Logger().With().Reset(), attrs...),
 		name:   h.name,
 	}
 }
@@ -191,7 +191,7 @@ func (h *groupHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 func (h *groupHandler) WithGroup(name string) slog.Handler {
 	return &groupHandler{
 		parent: h,
-		ctx:    zerolog.Context{},
+		ctx:    h.ctx.Logger().With().Reset(),
 		name:   name,
 	}
 }
